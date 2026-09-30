@@ -1,5 +1,8 @@
 import { Text, View, StyleSheet } from "react-native";
 
+/**
+ * Default index screen shown at the app's root route.
+ */
 export default function Index() {
   return (
     <View style={styles.container}>
