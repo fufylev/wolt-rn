@@ -1,0 +1,121 @@
+import { useEffect } from "react";
+import { StyleSheet, Text, View } from "react-native";
+import Animated, {
+  Easing,
+  scrollTo,
+  useAnimatedReaction,
+  useAnimatedRef,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from "react-native-reanimated";
+
+const iconDataSets = {
+  set1: [
+    { emoji: "🍕", color: "#FFE5CC" },
+    { emoji: "🍔", color: "#F4D03F" },
+    { emoji: "🍟", color: "#F8D7DA" },
+    { emoji: "🌮", color: "#D5EDDA" },
+    { emoji: "🍗", color: "#FADBD8" },
+  ],
+  set2: [
+    { emoji: "🎮", color: "#D1ECF1" },
+    { emoji: "🎧", color: "#E2E3E5" },
+    { emoji: "☕", color: "#F4D03F" },
+    { emoji: "🍿", color: "#FFE5CC" },
+    { emoji: "🥤", color: "#F8D7DA" },
+  ],
+  set3: [
+    { emoji: "🍰", color: "#FADBD8" },
+    { emoji: "🍦", color: "#D1ECF1" },
+    { emoji: "🍪", color: "#FFE5CC" },
+    { emoji: "🎲", color: "#D5EDDA" },
+    { emoji: "🕹️", color: "#E2E3E5" },
+  ],
+};
+
+const ITEM_HEIGHT = 160;
+const SCROLL_SPEED = 20; // pixels per second
+const GAP = 10; // gap between items from styles
+
+interface SmoothInfiniteScrollProps {
+  scrollDirection?: "up" | "down";
+  iconSet?: "set1" | "set2" | "set3";
+}
+
+const SmoothInfinitScroll = ({
+  scrollDirection = "down",
+  iconSet = "set1",
+}: SmoothInfiniteScrollProps) => {
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
+  const scrollY = useSharedValue(0);
+
+  const itemData = iconDataSets[iconSet];
+  const items = [...itemData, ...itemData];
+  // Height of one set (item + gap after it). The second copy starts exactly
+  // this far below the first, so jumping back by this distance is invisible.
+  const loopHeight = itemData.length * (ITEM_HEIGHT + GAP);
+
+  useEffect(() => {
+    const duration = (loopHeight / SCROLL_SPEED) * 1000; // convert to milliseconds
+    const from = scrollDirection === "down" ? 0 : loopHeight;
+    const to = scrollDirection === "down" ? loopHeight : 0;
+
+    // withRepeat jumps back to `from` on every cycle by itself,
+    // so the shared value never has to be reset manually
+    scrollY.set(from);
+    scrollY.set(
+      withRepeat(
+        withTiming(to, { duration, easing: Easing.linear }),
+        -1, // infinite repeats
+        false, // don't reverse
+      ),
+    );
+  }, [scrollDirection, loopHeight, scrollY]);
+
+  useAnimatedReaction(
+    () => scrollY.get(),
+    (y) => {
+      scrollTo(scrollRef, 0, y, false);
+    },
+  );
+
+  return (
+    <Animated.ScrollView
+      ref={scrollRef}
+      scrollEnabled={false}
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.container}
+    >
+      {items.map((item, i) => (
+        <View
+          key={i}
+          style={[styles.iconContainer, { backgroundColor: item.color }]}
+        >
+          <Text style={styles.iconText}>{item.emoji}</Text>
+        </View>
+      ))}
+    </Animated.ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    gap: 10,
+    paddingVertical: 20,
+  },
+  iconContainer: {
+    width: 160,
+    height: ITEM_HEIGHT,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 20,
+    marginHorizontal: 5,
+    boxShadow: "0px -2px 10px rgba(0, 0, 0, 0.1)",
+  },
+  iconText: {
+    fontSize: 48,
+  },
+});
+
+export default SmoothInfinitScroll;
