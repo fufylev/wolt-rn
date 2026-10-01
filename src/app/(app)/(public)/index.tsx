@@ -1,44 +1,38 @@
-import AppleAuthButton from "@/components/auth/AppleAuthButton";
-import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
-import SmoothInfinitScroll from "@/components/SmoothInfinitScroll";
-import { Fonts } from "@/constants/theme";
+import AuthButton from "@/components/auth/AuthButton";
+import SmoothInfiniteScroll from "@/components/SmoothInfiniteScroll";
+import { Colors, Fonts } from "@/constants/theme";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import * as WebBrowser from "expo-web-browser";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 export default function Index() {
-  const openWebBrouser = async () => {
+  const openPrivacyStatement = () =>
     WebBrowser.openBrowserAsync("https://explore.wolt.com/en/kaz/privacy");
-  };
 
   return (
     <View style={styles.container}>
       <View style={styles.infiniteContainer}>
         <View>
-          <SmoothInfinitScroll scrollDirection="down" iconSet="set1" />
+          <SmoothInfiniteScroll scrollDirection="down" iconSet="set1" />
         </View>
         <View>
-          <SmoothInfinitScroll scrollDirection="up" iconSet="set2" />
+          <SmoothInfiniteScroll scrollDirection="up" iconSet="set2" />
         </View>
         <View>
-          <SmoothInfinitScroll scrollDirection="down" iconSet="set3" />
+          <SmoothInfiniteScroll scrollDirection="down" iconSet="set3" />
         </View>
         <LinearGradient
-          colors={["transparent", "#fff"]}
-          style={{
-            position: "absolute",
-            height: 200,
-            left: 0,
-            bottom: 0,
-            right: 0,
-          }}
+          colors={["transparent", Colors.background]}
+          style={styles.gradient}
         />
       </View>
       <View style={styles.contentContainer}>
         <Image
           source={require("@/assets/images/wolt-logo.png")}
           style={styles.logo}
+          contentFit="contain"
         />
         <Animated.Text entering={FadeInDown} style={styles.tagline}>
           Almost everything delivered
@@ -46,21 +40,29 @@ export default function Index() {
 
         <View style={styles.buttonContainer}>
           <Animated.View entering={FadeInDown.delay(100)}>
-            <AppleAuthButton />
+            <AuthButton
+              label="Sign in with Apple"
+              icon="logo-apple"
+              backgroundColor={Colors.dark}
+              textColor={Colors.background}
+            />
           </Animated.View>
           <Animated.View entering={FadeInDown.delay(200)}>
-            <GoogleAuthButton />
+            <AuthButton
+              label="Continue with Google"
+              icon="logo-google"
+              backgroundColor={Colors.google}
+              textColor={Colors.background}
+            />
           </Animated.View>
           <Animated.View entering={FadeInDown.delay(300)}>
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>Other options</Text>
-            </TouchableOpacity>
+            <AuthButton label="Other options" />
           </Animated.View>
         </View>
         <Animated.View entering={FadeInDown.delay(400)} style={styles.footer}>
           <Text style={styles.footerText}>
             Please visit{" "}
-            <Text style={styles.footerLink} onPress={openWebBrouser}>
+            <Text style={styles.footerLink} onPress={openPrivacyStatement}>
               Wolt Privacy Statement
             </Text>{" "}
             and to learn about personal data processing at Wolt.
@@ -85,15 +87,21 @@ const styles = StyleSheet.create({
     flex: 0.8,
     flexDirection: "row",
     justifyContent: "center",
-    alignItems: "center",
+    // Columns are taller than the container: pin them to the top and clip
+    alignItems: "flex-start",
     gap: 4,
-    position: "relative",
     overflow: "hidden",
+  },
+  gradient: {
+    position: "absolute",
+    height: 200,
+    left: 0,
+    bottom: 0,
+    right: 0,
   },
   logo: {
     width: "100%",
     height: 48,
-    resizeMode: "contain",
     marginBottom: 20,
   },
   tagline: {
@@ -107,20 +115,6 @@ const styles = StyleSheet.create({
     width: "100%",
     gap: 12,
   },
-  button: {
-    borderRadius: 12,
-    backgroundColor: "#f0f0f0",
-    justifyContent: "center",
-    paddingVertical: 17,
-    paddingHorizontal: 20,
-    flexDirection: "row",
-    gap: 4,
-  },
-  buttonText: {
-    fontSize: 18,
-    color: "#666",
-    fontFamily: Fonts.brandBold,
-  },
   footer: {
     marginTop: 30,
     width: "100%",
@@ -128,13 +122,13 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    color: "#999",
+    color: Colors.mutedLight,
     fontFamily: Fonts.brand,
     textAlign: "center",
     lineHeight: 18,
   },
   footerLink: {
-    color: "#4285f4",
+    color: Colors.link,
     textDecorationLine: "underline",
   },
 });

@@ -2,9 +2,7 @@ import { useEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Animated, {
   Easing,
-  scrollTo,
-  useAnimatedReaction,
-  useAnimatedRef,
+  useAnimatedStyle,
   useSharedValue,
   withRepeat,
   withTiming,
@@ -36,18 +34,17 @@ const iconDataSets = {
 
 const ITEM_HEIGHT = 160;
 const SCROLL_SPEED = 20; // pixels per second
-const GAP = 10; // gap between items from styles
+const GAP = 10; // gap between items
 
 interface SmoothInfiniteScrollProps {
   scrollDirection?: "up" | "down";
   iconSet?: "set1" | "set2" | "set3";
 }
 
-const SmoothInfinitScroll = ({
+const SmoothInfiniteScroll = ({
   scrollDirection = "down",
   iconSet = "set1",
 }: SmoothInfiniteScrollProps) => {
-  const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollY = useSharedValue(0);
 
   const itemData = iconDataSets[iconSet];
@@ -73,20 +70,14 @@ const SmoothInfinitScroll = ({
     );
   }, [scrollDirection, loopHeight, scrollY]);
 
-  useAnimatedReaction(
-    () => scrollY.get(),
-    (y) => {
-      scrollTo(scrollRef, 0, y, false);
-    },
-  );
+  // Moving the column with transform is cheaper than scrolling a ScrollView:
+  // the already rendered layer is just shifted on the GPU
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: -scrollY.get() }],
+  }));
 
   return (
-    <Animated.ScrollView
-      ref={scrollRef}
-      scrollEnabled={false}
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.container}
-    >
+    <Animated.View style={[styles.container, animatedStyle]}>
       {items.map((item, i) => (
         <View
           key={i}
@@ -95,13 +86,13 @@ const SmoothInfinitScroll = ({
           <Text style={styles.iconText}>{item.emoji}</Text>
         </View>
       ))}
-    </Animated.ScrollView>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    gap: 10,
+    gap: GAP,
     paddingVertical: 20,
   },
   iconContainer: {
@@ -118,4 +109,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SmoothInfinitScroll;
+export default SmoothInfiniteScroll;
